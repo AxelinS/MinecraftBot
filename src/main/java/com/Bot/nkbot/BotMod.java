@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.ZombieEntity;
+import net.minecraft.entity.passive.AllayEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
@@ -17,6 +18,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class BotMod implements ModInitializer {
 
     private ZombieEntity bot;
+    private AllayEntity bot_fly;
 
     @Override
     public void onInitialize() {
@@ -25,6 +27,16 @@ public class BotMod implements ModInitializer {
                 ServerPlayerEntity player = context.getSource().getPlayer();
                 World world = player.getWorld();
 
+                bot_fly = EntityType.ALLAY.create(
+                    (ServerWorld) world,
+                    (allay) -> allay.setCustomName(Text.literal("putada voladora")),
+                    player.getBlockPos().up(),
+                    SpawnReason.COMMAND,
+                    true,
+                    false
+                );
+
+                
                 bot = EntityType.ZOMBIE.create(
                     (ServerWorld) world,
                     (zombie) -> zombie.setCustomName(Text.literal("Botito")),
@@ -39,6 +51,13 @@ public class BotMod implements ModInitializer {
                     bot.setPosition(player.getX() + 2, player.getY(), player.getZ());
                     world.spawnEntity(bot);
                     context.getSource().sendFeedback(() -> Text.literal("Botito ha sido invocado"), false);
+                }
+                if (bot_fly != null) {
+                    bot_fly.setCustomName(Text.literal("putada voladora"));
+                    bot_fly.setCustomNameVisible(true);
+                    bot_fly.setPosition(player.getX() + 2, player.getY(), player.getZ());
+                    world.spawnEntity(bot_fly);
+                    context.getSource().sendFeedback(() -> Text.literal("putada voladora ha sido invocado"), false);
                 }
 
                 return 1;
@@ -55,6 +74,17 @@ public class BotMod implements ModInitializer {
 
                     bot.setVelocity(direction);
                     bot.velocityModified = true;
+                }
+            }
+            if (bot_fly != null && bot_fly.isAlive()) {
+                ServerPlayerEntity target = server.getPlayerManager().getPlayerList().stream().findFirst().orElse(null);
+                if (target != null) {
+                    Vec3d botPos = bot_fly.getPos();
+                    Vec3d playerPos = target.getPos();
+                    Vec3d direction = playerPos.subtract(botPos).normalize().multiply(0.3); // velocidad
+
+                    bot_fly.setVelocity(direction);
+                    bot_fly.velocityModified = true;
                 }
             }
         });

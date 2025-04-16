@@ -22,8 +22,6 @@ bin/
 
 # gradle
 
-.gradle/
-build/
 out/
 classes/
 
