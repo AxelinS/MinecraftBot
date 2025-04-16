@@ -3,6 +3,7 @@ package com.Bot.nkbot;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.ZombieEntity;
@@ -75,12 +76,9 @@ public class BotMod implements ModInitializer {
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             if (bot != null && bot.isAlive()) {
-                //ServerPlayerEntity target = server.getPlayerManager().getPlayerList().stream().findFirst().orElse(null);
-                
-                //target = "Morra301";//"Manuel4274";
-                //ServerPlayerEntity manuel = server.getPlayerManager().getPlayer(target);
-
                 if (target != null) {
+                    bot.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, target.getPos());
+                    
                     Vec3d botPos = bot.getPos();
                     Vec3d playerPos = target.getPos();
                     Vec3d direction = playerPos.subtract(botPos).normalize().multiply(0.22); // velocidad
