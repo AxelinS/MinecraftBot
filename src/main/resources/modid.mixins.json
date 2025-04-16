@@ -1,0 +1,8 @@
+{
+	"required": false,
+	"package": "com.Bot.nkbot.mixin",
+	"mixins": [],
+	"client": [],
+	"server": []
+  }
+  

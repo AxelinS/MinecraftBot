@@ -1,0 +1,22 @@
+{
+	"schemaVersion": 1,
+	"id": "nkbot",
+	"version": "${version}",
+	"name": "NK Bot",
+	"description": "Un bot sencillo en Fabric 1.21.4",
+	"authors": ["AxelinS","Morra301","Juancholin"],
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+	  "main": [
+		"com.Bot.nkbot.BotMod"
+	  ]
+	},
+	"depends": {
+	  "fabricloader": ">=0.14.0",
+	  "fabric": "*",
+	  "minecraft": "1.21.4",
+	  "java": ">=21"
+	}
+  }
+  

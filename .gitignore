@@ -1,6 +1,32 @@
 # Compiled class file
 *.class
 
+# fabric
+
+run/
+
+# java
+
+hs_err_*.log
+replay_*.log
+*.hprof
+*.jfr
+
+# vscode
+
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# gradle
+
+.gradle/
+build/
+out/
+classes/
+
 # Log file
 *.log
 
