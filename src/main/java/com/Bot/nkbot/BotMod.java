@@ -19,6 +19,7 @@ public class BotMod implements ModInitializer {
 
     private ZombieEntity bot;
     private AllayEntity bot_fly;
+    private String target;
 
     @Override
     public void onInitialize() {
@@ -36,7 +37,6 @@ public class BotMod implements ModInitializer {
                     false
                 );
 
-                
                 bot = EntityType.ZOMBIE.create(
                     (ServerWorld) world,
                     (zombie) -> zombie.setCustomName(Text.literal("Botito")),
@@ -45,6 +45,7 @@ public class BotMod implements ModInitializer {
                     true,
                     false
                 );
+
                 if (bot != null) {
                     bot.setCustomName(Text.literal("Botito"));
                     bot.setCustomNameVisible(true);
@@ -55,7 +56,7 @@ public class BotMod implements ModInitializer {
                 if (bot_fly != null) {
                     bot_fly.setCustomName(Text.literal("putada voladora"));
                     bot_fly.setCustomNameVisible(true);
-                    bot_fly.setPosition(player.getX() + 2, player.getY(), player.getZ());
+                    bot_fly.setPosition(player.getX() + 5, player.getY(), player.getZ());
                     world.spawnEntity(bot_fly);
                     context.getSource().sendFeedback(() -> Text.literal("putada voladora ha sido invocado"), false);
                 }
@@ -66,11 +67,15 @@ public class BotMod implements ModInitializer {
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             if (bot != null && bot.isAlive()) {
-                ServerPlayerEntity target = server.getPlayerManager().getPlayerList().stream().findFirst().orElse(null);
-                if (target != null) {
+                //ServerPlayerEntity target = server.getPlayerManager().getPlayerList().stream().findFirst().orElse(null);
+
+                target = "Morra301";//"Manuel4274";
+                ServerPlayerEntity manuel = server.getPlayerManager().getPlayer(target);
+
+                if (manuel != null) {
                     Vec3d botPos = bot.getPos();
-                    Vec3d playerPos = target.getPos();
-                    Vec3d direction = playerPos.subtract(botPos).normalize().multiply(0.1); // velocidad
+                    Vec3d playerPos = manuel.getPos();
+                    Vec3d direction = playerPos.subtract(botPos).normalize().multiply(0.22); // velocidad
 
                     bot.setVelocity(direction);
                     bot.velocityModified = true;

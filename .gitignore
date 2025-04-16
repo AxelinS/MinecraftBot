@@ -21,7 +21,7 @@ bin/
 .project
 
 # gradle
-
+.gradle/
 out/
 classes/
 
