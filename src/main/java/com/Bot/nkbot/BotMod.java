@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.Blocks;
+import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.EntityType;
@@ -15,11 +16,15 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
+
+import java.util.List;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 
@@ -43,13 +48,19 @@ public class BotMod implements ModInitializer {
                 literal("summonbot")
                     .then(argument("target", EntityArgumentType.player())
                     .then(argument("tipo", StringArgumentType.word())
+                    .suggests((context, builder) -> {
+                        return CommandSource.suggestMatching(
+                            // A la hora de escribir el comando le sugiere los siguientes mobs
+                            List.of("allay", "zombie", "vex"), builder
+                        );
+                    })
                     .executes(context -> {
                         target = EntityArgumentType.getPlayer(context, "target");
                         tipo = StringArgumentType.getString(context, "tipo");
                         
                         ServerPlayerEntity invocador = context.getSource().getPlayer();
                         World world = invocador.getWorld();
-                        // Validar que el mundo sea ServerWorld
+                        // Valida que el mundo sea server
                         if (!(world instanceof ServerWorld serverWorld)) {
                             context.getSource().sendError(Text.literal("Este comando debe ejecutarse en un mundo de servidor."));
                             return 0;
@@ -77,16 +88,22 @@ public class BotMod implements ModInitializer {
                                 }, invocador.getBlockPos().up(), SpawnReason.COMMAND, true, false);
                                 if (botVex != null) {
                                     botVex.setPosition(invocador.getX() + 5, invocador.getY(), invocador.getZ());
+                                    botVex.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(80.0);
+                                    botVex.setHealth(80.0F);
+                                    botVex.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(19.0);
+                                    botVex.getAttributeInstance(EntityAttributes.ATTACK_KNOCKBACK).setBaseValue(20.0);
                                     serverWorld.spawnEntity(botVex);
                                     context.getSource().sendFeedback(() -> Text.literal("Putada Voladora ha sido invocado"), false);
                                 }
                             break;
                             case "zombie":
-                                // Invoca el bot terrestre
+                                // Invoca el bot terrestre mini zombie
                                 botTerrestre = EntityType.ZOMBIE.create(serverWorld, (zombie) -> {
                                     zombie.setCustomName(Text.literal("Botito"));
                                     zombie.setCustomNameVisible(true);
-                                    zombie.setHealth(199);
+                                    zombie.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(199.0);
+                                    zombie.setHealth(199.0F);
+                                    zombie.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(49.0);
                                     zombie.setBaby(true);
                                 }, invocador.getBlockPos().up(), SpawnReason.COMMAND, true, false);
 
@@ -124,6 +141,7 @@ public class BotMod implements ModInitializer {
     }
 
     private void manejarBotTerrestre(ZombieEntity bot, ServerPlayerEntity objetivo) {
+        // Mini zombie
         ServerWorld mundo = (ServerWorld) bot.getWorld();
 
         Vec3d objetivo_pos = objetivo.getPos();
@@ -141,15 +159,20 @@ public class BotMod implements ModInitializer {
             mundo.breakBlock(bloqueFrenteCabeza, true);
         }
 
-        Vec3d bot_pos = bot.getPos();
+        Vec3d posBot = bot.getPos();
+        Vec3d posObjetivo = objetivo.getPos();
+
         // Diferencia de altura entre el target y el bot si target esta mas arriba el bot salta
-        double diferenciaAltura = objetivo_pos.getY() - bot_pos.getY();
+        double diferenciaAltura = objetivo_pos.getY() - posBot.getY();
         if (diferenciaAltura >= 2.1){
             bot.jump();
             BlockPos botBloqueAbajo = bot.getBlockPos().down();
             if(mundo.getBlockState(botBloqueAbajo).isAir()){
                 mundo.setBlockState(botBloqueAbajo, Blocks.DIRT.getDefaultState());
             }
+        }
+        if(posBot.isInRange(posObjetivo, 1)){
+            bot.tryAttack(mundo, objetivo);
         }
 
         // if (!mundo.getBlockState(bloqueFrente).isAir()) {
@@ -158,6 +181,7 @@ public class BotMod implements ModInitializer {
     }
 
     private void manejarBotAllay(AllayEntity bot, ServerPlayerEntity objetivo) {
+        // Allay sera el mob volador que ayude
         Vec3d posBot = bot.getPos();
         Vec3d posObjetivo = objetivo.getPos().add(1.3, 0, 1.3);
         Vec3d direccion = posObjetivo.subtract(posBot).normalize().multiply(0.3);
@@ -167,11 +191,17 @@ public class BotMod implements ModInitializer {
     }
     
     private void manejarBotVex(VexEntity bot, ServerPlayerEntity objetivo) {
+        // Vex es el mob volador hostil
+        ServerWorld mundo = (ServerWorld) bot.getWorld();
         Vec3d posBot = bot.getPos();
         Vec3d posObjetivo = objetivo.getPos();
         Vec3d direccion = posObjetivo.subtract(posBot).normalize().multiply(0.3);
 
         bot.setVelocity(direccion);
         bot.velocityModified = true;
+
+        if(posBot.isInRange(posObjetivo, 1)){
+            bot.tryAttack(mundo, objetivo);
+        }
     }
 }
