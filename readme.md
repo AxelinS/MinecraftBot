@@ -1,6 +1,6 @@
-### Bot para minecraft
+## Bot para minecraft
 
-# Añade 2 tipos de bots que pueden perseguir y atacar a un jugador en especifico
+### Añade 2 tipos de bots que pueden perseguir y atacar a un jugador en especifico
 - zombie
 - vex
 
@@ -8,7 +8,7 @@
 /summonbot <target> <tipo>
 ```
 
-# Objetivos a futuro
+### Objetivos a futuro
 
 1. **Nuevo pathfinding**
 
