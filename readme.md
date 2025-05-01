@@ -15,5 +15,5 @@
 2. **Mayor inteligencia para perseguir al objetivo y superar obstaculos**
 
 3. **Nuevos bots**:
-    -Recolector
-    -Conversador
+    - Recolector
+    - Conversador
