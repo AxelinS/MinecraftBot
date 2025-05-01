@@ -16,10 +16,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -84,14 +84,13 @@ public class BotMod implements ModInitializer {
                                 botVex = EntityType.VEX.create(serverWorld, (vex) -> {
                                     vex.setCustomName(Text.literal("Vex durisimo"));
                                     vex.setCustomNameVisible(true);
-                                    vex.setHealth(199);
+                                    vex.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(96.0);
+                                    vex.setHealth(96.0F);
+                                    vex.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(16.0);
+                                    vex.getAttributeInstance(EntityAttributes.ATTACK_KNOCKBACK).setBaseValue(20.0);
                                 }, invocador.getBlockPos().up(), SpawnReason.COMMAND, true, false);
                                 if (botVex != null) {
                                     botVex.setPosition(invocador.getX() + 5, invocador.getY(), invocador.getZ());
-                                    botVex.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(80.0);
-                                    botVex.setHealth(80.0F);
-                                    botVex.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(19.0);
-                                    botVex.getAttributeInstance(EntityAttributes.ATTACK_KNOCKBACK).setBaseValue(20.0);
                                     serverWorld.spawnEntity(botVex);
                                     context.getSource().sendFeedback(() -> Text.literal("Putada Voladora ha sido invocado"), false);
                                 }
@@ -103,7 +102,7 @@ public class BotMod implements ModInitializer {
                                     zombie.setCustomNameVisible(true);
                                     zombie.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(199.0);
                                     zombie.setHealth(199.0F);
-                                    zombie.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(49.0);
+                                    zombie.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(29.0);
                                     zombie.setBaby(true);
                                 }, invocador.getBlockPos().up(), SpawnReason.COMMAND, true, false);
 
@@ -126,16 +125,22 @@ public class BotMod implements ModInitializer {
                 manejarBotTerrestre(botTerrestre, target);
             }
             if (botAllay != null && botAllay.isAlive()) {
-                ServerPlayerEntity jugadorObjetivo = (target != null) ? target : server.getPlayerManager().getPlayerList().stream().findFirst().orElse(null);
+                ServerPlayerEntity jugadorObjetivo = target;//(target != null) ? target : server.getPlayerManager().getPlayerList().stream().findFirst().orElse(null);
                 if (jugadorObjetivo != null) {
                     manejarBotAllay(botAllay, jugadorObjetivo);
                 }
             }
             if (botVex != null && botVex.isAlive()) {
-                ServerPlayerEntity jugadorObjetivo = (target != null) ? target : server.getPlayerManager().getPlayerList().stream().findFirst().orElse(null);
+                ServerPlayerEntity jugadorObjetivo = target;//(target != null) ? target : server.getPlayerManager().getPlayerList().stream().findFirst().orElse(null);
                 if (jugadorObjetivo != null) {
                     manejarBotVex(botVex, jugadorObjetivo);
                 }
+            }
+        });
+
+        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
+            if (target != null && target.getUuid().equals(oldPlayer.getUuid())) {
+                target = newPlayer;
             }
         });
     }
@@ -164,7 +169,7 @@ public class BotMod implements ModInitializer {
 
         // Diferencia de altura entre el target y el bot si target esta mas arriba el bot salta
         double diferenciaAltura = objetivo_pos.getY() - posBot.getY();
-        if (diferenciaAltura >= 2.1){
+        if (diferenciaAltura >= 2.1 & posBot.isInRange(posObjetivo, 2)){
             bot.jump();
             BlockPos botBloqueAbajo = bot.getBlockPos().down();
             if(mundo.getBlockState(botBloqueAbajo).isAir()){
