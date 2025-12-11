@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 ## Bot para minecraft 1.21
+=======
+## Bot para minecraft 1.21.1 :)
+>>>>>>> Stashed changes
 
 ### Añade 2 tipos de bots que pueden perseguir y atacar a un jugador en especifico
 - zombie
