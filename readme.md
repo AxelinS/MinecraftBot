@@ -1,4 +1,4 @@
-## Bot para minecraft
+## Bot para minecraft 1.21.1
 
 ### Añade 2 tipos de bots que pueden perseguir y atacar a un jugador en especifico
 - zombie
